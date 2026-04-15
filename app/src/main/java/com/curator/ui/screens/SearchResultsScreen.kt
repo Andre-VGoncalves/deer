@@ -23,24 +23,31 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.curator.data.BookItem
-import com.curator.ui.SearchUiState
-import com.curator.ui.SearchViewModel
+import com.curator.data.RetrofitClient
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchResultsScreen(
     query: String,
     onBackClick: () -> Unit,
-    onBookClick: (BookItem) -> Unit,
-    viewModel: SearchViewModel = viewModel()
+    onBookClick: (BookItem) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    var searchResults by remember { mutableStateOf<List<BookItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(query) {
-        viewModel.searchBooks(query)
+        try {
+            isLoading = true
+            val response = RetrofitClient.booksApi.searchBooks(query)
+            searchResults = response.items ?: emptyList()
+        } catch (e: Exception) {
+            // Handle error
+        } finally {
+            isLoading = false
+        }
     }
 
     Scaffold(
@@ -58,95 +65,86 @@ fun SearchResultsScreen(
             )
         }
     ) { padding ->
-        when (val state = uiState) {
-            is SearchUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is SearchUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                    Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
-                }
-            }
-            is SearchUiState.Success -> {
-                val searchResults = state.books
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Search Results",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        "“$query”",
-                        style = MaterialTheme.typography.displaySmall,
-                        fontStyle = FontStyle.Italic,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "Found ${searchResults.size} matching titles across your curated shelves and world library.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Search Results",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 2.sp
+                )
+                Text(
+                    "“$query”",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Found ${searchResults.size} matching titles across your curated shelves and world library.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    SectionDivider(title = "On Your Shelf", count = "2 Items")
+                SectionDivider(title = "On Your Shelf", count = "2 Items")
 
-                    Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
-                        searchResults.take(2).forEachIndexed { index, book ->
-                            ShelfBookCard(
-                                book = book,
-                                onClick = { onBookClick(book) },
-                                modifier = if (index % 2 != 0) Modifier.padding(top = 32.dp) else Modifier
-                            )
-                        }
+                Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
+                    searchResults.take(2).forEachIndexed { index, book ->
+                        ShelfBookCard(
+                            book = book,
+                            onClick = { onBookClick(book) },
+                            modifier = if (index % 2 != 0) Modifier.padding(top = 32.dp) else Modifier
+                        )
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(64.dp))
+                Spacer(modifier = Modifier.height(64.dp))
 
-                    SectionDivider(title = "World Library", count = "Global Collection")
+                SectionDivider(title = "World Library", count = "Global Collection")
 
-                    val remainingBooks = searchResults.drop(2)
-                    val chunked = remainingBooks.chunked(2)
+                val remainingBooks = searchResults.drop(2)
+                val chunked = remainingBooks.chunked(2)
 
-                    chunked.forEach { rowBooks ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(24.dp)
-                        ) {
-                            rowBooks.forEachIndexed { colIndex, book ->
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(top = if (colIndex % 2 != 0) 32.dp else 0.dp)
-                                ) {
-                                    WorldBookCard(book = book, onClick = { onBookClick(book) })
-                                }
-                            }
-                            if (rowBooks.size < 2) {
-                                Spacer(modifier = Modifier.weight(1f))
+                chunked.forEachIndexed { rowIndex, rowBooks ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        rowBooks.forEachIndexed { colIndex, book ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(top = if (colIndex % 2 != 0) 32.dp else 0.dp)
+                            ) {
+                                WorldBookCard(book = book, onClick = { onBookClick(book) })
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
+                        if (rowBooks.size < 2) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    if (searchResults.size > 4) {
-                        FeaturedChoice(book = searchResults[4])
-                    }
-
-                    Spacer(modifier = Modifier.height(48.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                if (searchResults.size > 5) {
+                    FeaturedChoice(book = searchResults[4])
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
             }
         }
     }
@@ -227,7 +225,7 @@ fun ShelfBookCard(book: BookItem, onClick: () -> Unit, modifier: Modifier = Modi
             Spacer(modifier = Modifier.weight(1f))
             Column {
                 LinearProgressIndicator(
-                    progress = { 0.65f },
+                    progress = 0.65f,
                     modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHigh

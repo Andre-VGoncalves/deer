@@ -18,25 +18,37 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.curator.data.BookItem
 import com.curator.data.Note
-import com.curator.ui.BookDetailUiState
-import com.curator.ui.BookDetailViewModel
+import com.curator.data.RetrofitClient
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailScreen(
     bookId: String?,
-    onBackClick: () -> Unit,
-    viewModel: BookDetailViewModel = viewModel()
+    onBackClick: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    var book by remember { mutableStateOf<BookItem?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            viewModel.loadBook(bookId)
+            try {
+                isLoading = true
+                errorMessage = null
+                val fetchedBook = RetrofitClient.booksApi.getBook(bookId)
+                book = fetchedBook
+            } catch (e: Exception) {
+                errorMessage = "Failed to load book: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        } else {
+            isLoading = false
+            errorMessage = "Invalid Book ID"
         }
     }
 
@@ -68,201 +80,200 @@ fun BookDetailScreen(
             )
         }
     ) { padding ->
-        when (val state = uiState) {
-            is BookDetailUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is BookDetailUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                    Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
-                }
+        } else if (errorMessage != null) {
+            Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
             }
-            is BookDetailUiState.Success -> {
-                val book = state.book
-                val volumeInfo = book.volumeInfo
-                Column(
+        } else if (book == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Book not found")
+            }
+        } else {
+            val volumeInfo = book!!.volumeInfo
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Row(
+                    Box(
                         modifier = Modifier
-                            .padding(24.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                            .weight(1f)
+                            .aspectRatio(3f / 4f)
+                            .rotate(-2f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .shadow(elevation = 16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(3f / 4f)
-                                .rotate(-2f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .shadow(elevation = 16.dp)
-                        ) {
-                            AsyncImage(
-                                model = volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:"),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-
-                        Column(modifier = Modifier.weight(1.2f)) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.tertiaryContainer,
-                                shape = CircleShape
-                            ) {
-                                Text(
-                                    "BEST SELLER",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = volumeInfo.title, style = MaterialTheme.typography.headlineLarge)
-                            Text(
-                                text = "by ${volumeInfo.authors?.joinToString(", ") ?: "Unknown"}",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontStyle = FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        AsyncImage(
+                            model = volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:"),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
                     }
 
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            repeat(4) { Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp)) }
-                            Icon(Icons.Default.StarHalf, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("${volumeInfo.averageRating ?: 4.5} (${volumeInfo.ratingsCount ?: "2.4k"} reviews)", style = MaterialTheme.typography.labelSmall)
-                        }
-                        Text("|", color = MaterialTheme.colorScheme.outlineVariant)
+                    Column(modifier = Modifier.weight(1.2f)) {
                         Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(4.dp)
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = CircleShape
                         ) {
                             Text(
-                                volumeInfo.categories?.firstOrNull() ?: "General",
+                                "BEST SELLER",
                                 style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = volumeInfo.title, style = MaterialTheme.typography.headlineLarge)
+                        Text(
+                            text = "by ${volumeInfo.authors?.joinToString(", ") ?: "Unknown"}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = volumeInfo.description?.replace(Regex("<.*?>"), "") ?: "No description available.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Button(
-                            onClick = { },
-                            modifier = Modifier.weight(1f).height(56.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("ADD TO LIBRARY")
-                        }
-                        Button(
-                            onClick = { },
-                            modifier = Modifier.weight(1f).height(56.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, contentColor = MaterialTheme.colorScheme.onSurface)
-                        ) {
-                            Icon(Icons.Default.Update, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("UPDATE STATUS")
-                        }
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        repeat(4) { Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp)) }
+                        Icon(Icons.Default.StarHalf, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("${volumeInfo.averageRating ?: 4.5} (${volumeInfo.ratingsCount ?: "2.4k"} reviews)", style = MaterialTheme.typography.labelSmall)
                     }
-
-                    Spacer(modifier = Modifier.height(48.dp))
-
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        StatItem(label = "PAGES", value = (volumeInfo.pageCount ?: 0).toString(), modifier = Modifier.weight(1f))
-                        StatItem(label = "READ TIME", value = "${(volumeInfo.pageCount ?: 0) / 40}h", modifier = Modifier.weight(1f))
-                        StatItem(label = "LANGUAGE", value = volumeInfo.language?.uppercase() ?: "EN", modifier = Modifier.weight(1f))
-                        StatItem(label = "FORMAT", value = "Hard", modifier = Modifier.weight(1f))
-                    }
-
-                    Spacer(modifier = Modifier.height(64.dp))
-
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("Reader Notes", style = MaterialTheme.typography.headlineSmall)
-                            Text("Observations from the community", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        TextButton(onClick = {}) {
-                            Text("VIEW ALL", color = MaterialTheme.colorScheme.primary)
-                            Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(16.dp))
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
+                    Text("|", color = MaterialTheme.colorScheme.outlineVariant)
                     Surface(
-                        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
-                        shape = RoundedCornerShape(12.dp)
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(4.dp)
                     ) {
-                        Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Surface(modifier = Modifier.size(40.dp), shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-                                Box(contentAlignment = Alignment.Center) { Text("JD", fontWeight = FontWeight.Bold) }
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Leave a note or reflection...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Row {
-                                        Icon(Icons.Default.FormatItalic, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Icon(Icons.Default.Link, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                    Button(onClick = {}, shape = RoundedCornerShape(32.dp)) {
-                                        Text("POST NOTE", style = MaterialTheme.typography.labelSmall)
-                                    }
+                        Text(
+                            volumeInfo.categories?.firstOrNull() ?: "General",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = volumeInfo.description?.replace(Regex("<.*?>"), "") ?: "No description available.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("ADD TO LIBRARY")
+                    }
+                    Button(
+                        onClick = { },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, contentColor = MaterialTheme.colorScheme.onSurface)
+                    ) {
+                        Icon(Icons.Default.Update, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("UPDATE STATUS")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    StatItem(label = "PAGES", value = (volumeInfo.pageCount ?: 0).toString(), modifier = Modifier.weight(1f))
+                    StatItem(label = "READ TIME", value = "${(volumeInfo.pageCount ?: 0) / 40}h", modifier = Modifier.weight(1f))
+                    StatItem(label = "LANGUAGE", value = volumeInfo.language?.uppercase() ?: "EN", modifier = Modifier.weight(1f))
+                    StatItem(label = "FORMAT", value = "Hard", modifier = Modifier.weight(1f))
+                }
+
+                Spacer(modifier = Modifier.height(64.dp))
+
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Reader Notes", style = MaterialTheme.typography.headlineSmall)
+                        Text("Observations from the community", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    TextButton(onClick = {}) {
+                        Text("VIEW ALL", color = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Surface(
+                    modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Surface(modifier = Modifier.size(40.dp), shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
+                            Box(contentAlignment = Alignment.Center) { Text("JD", fontWeight = FontWeight.Bold) }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Leave a note or reflection...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Row {
+                                    Icon(Icons.Default.FormatItalic, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(Icons.Default.Link, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Button(onClick = {}, shape = RoundedCornerShape(32.dp)) {
+                                    Text("POST NOTE", style = MaterialTheme.typography.labelSmall)
                                 }
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    notes.forEach { note ->
-                        NoteItem(note = note)
-                        Spacer(modifier = Modifier.height(32.dp))
-                    }
-
-                    Spacer(modifier = Modifier.height(48.dp))
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                notes.forEach { note ->
+                    NoteItem(note = note)
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
             }
         }
     }
