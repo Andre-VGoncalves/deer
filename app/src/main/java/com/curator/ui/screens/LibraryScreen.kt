@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.curator.R
 import com.curator.data.Book
 import com.curator.ui.components.BookCard
 import com.curator.ui.components.CuratorBottomNavBar
@@ -32,7 +34,11 @@ fun LibraryScreen(
     onSearch: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val categories = listOf("Reading", "Read", "Want to Read")
+    val categories = listOf(
+        stringResource(R.string.reading),
+        stringResource(R.string.read),
+        stringResource(R.string.want_to_read)
+    )
     var selectedCategory by remember { mutableStateOf(categories[0]) }
 
     val books = remember {
@@ -74,7 +80,7 @@ fun LibraryScreen(
                     .fillMaxWidth()
                     .height(64.dp)
                     .clip(RoundedCornerShape(32.dp)),
-                placeholder = { Text("Search titles, authors, or curators...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
+                placeholder = { Text(stringResource(R.string.search_hint), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -127,11 +133,11 @@ fun LibraryScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "My Library",
+                text = stringResource(R.string.my_library),
                 style = MaterialTheme.typography.headlineLarge
             )
             Text(
-                text = "12 volumes currently in your collection.",
+                text = stringResource(R.string.library_count, 12),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -166,16 +172,16 @@ fun LibraryScreen(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Column {
-                    Text(text = "Curated Additions", style = MaterialTheme.typography.headlineSmall)
+                    Text(text = stringResource(R.string.curated_additions), style = MaterialTheme.typography.headlineSmall)
                     Text(
-                        text = "Based on your recent interests.",
+                        text = stringResource(R.string.based_on_interests),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 TextButton(onClick = { }) {
                     Text(
-                        "VIEW ALL",
+                        stringResource(R.string.view_all),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -217,7 +223,7 @@ fun LibraryScreen(
                                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             ) {
-                                Text("ADD TO WANT", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.add_to_want), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }

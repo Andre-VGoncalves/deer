@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.curator.R
 import com.curator.data.BookItem
 import com.curator.data.Note
 import com.curator.ui.BookDetailUiState
@@ -56,7 +58,7 @@ fun BookDetailScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("BACK", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(stringResource(R.string.back), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
@@ -117,7 +119,7 @@ fun BookDetailScreen(
                                 shape = CircleShape
                             ) {
                                 Text(
-                                    "BEST SELLER",
+                                stringResource(R.string.best_seller),
                                     style = MaterialTheme.typography.labelSmall,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
@@ -182,7 +184,7 @@ fun BookDetailScreen(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("ADD TO LIBRARY")
+                        Text(stringResource(R.string.add_to_library))
                         }
                         Button(
                             onClick = { },
@@ -192,7 +194,7 @@ fun BookDetailScreen(
                         ) {
                             Icon(Icons.Default.Update, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("UPDATE STATUS")
+                        Text(stringResource(R.string.update_status))
                         }
                     }
 
@@ -202,10 +204,10 @@ fun BookDetailScreen(
                         modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        StatItem(label = "PAGES", value = (volumeInfo.pageCount ?: 0).toString(), modifier = Modifier.weight(1f))
-                        StatItem(label = "READ TIME", value = "${(volumeInfo.pageCount ?: 0) / 40}h", modifier = Modifier.weight(1f))
-                        StatItem(label = "LANGUAGE", value = volumeInfo.language?.uppercase() ?: "EN", modifier = Modifier.weight(1f))
-                        StatItem(label = "FORMAT", value = "Hard", modifier = Modifier.weight(1f))
+                    StatItem(label = stringResource(R.string.pages), value = (volumeInfo.pageCount ?: 0).toString(), modifier = Modifier.weight(1f))
+                    StatItem(label = stringResource(R.string.read_time), value = "${(volumeInfo.pageCount ?: 0) / 40}h", modifier = Modifier.weight(1f))
+                    StatItem(label = stringResource(R.string.language), value = volumeInfo.language?.uppercase() ?: "EN", modifier = Modifier.weight(1f))
+                    StatItem(label = stringResource(R.string.format), value = "Hard", modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(64.dp))
@@ -216,11 +218,11 @@ fun BookDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Reader Notes", style = MaterialTheme.typography.headlineSmall)
-                            Text("Observations from the community", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.reader_notes), style = MaterialTheme.typography.headlineSmall)
+                        Text(stringResource(R.string.community_observations), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         TextButton(onClick = {}) {
-                            Text("VIEW ALL", color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.view_all), color = MaterialTheme.colorScheme.primary)
                             Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(16.dp))
                         }
                     }
@@ -238,7 +240,7 @@ fun BookDetailScreen(
                                 Box(contentAlignment = Alignment.Center) { Text("JD", fontWeight = FontWeight.Bold) }
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Leave a note or reflection...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                        Text(stringResource(R.string.leave_note), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Row {
@@ -247,7 +249,7 @@ fun BookDetailScreen(
                                         Icon(Icons.Default.Link, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                     Button(onClick = {}, shape = RoundedCornerShape(32.dp)) {
-                                        Text("POST NOTE", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.post_note), style = MaterialTheme.typography.labelSmall)
                                     }
                                 }
                             }
@@ -307,7 +309,7 @@ fun NoteItem(note: Note) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Reply, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("REPLY", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.reply), style = MaterialTheme.typography.labelSmall)
                 }
             }
         }
