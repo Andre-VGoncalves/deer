@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -26,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.curator.R
 import com.curator.data.BookItem
 import com.curator.ui.SearchUiState
 import com.curator.ui.SearchViewModel
@@ -82,7 +80,7 @@ fun SearchResultsScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                    stringResource(R.string.search_results),
+                        "Search Results",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 2.sp
@@ -94,14 +92,14 @@ fun SearchResultsScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                    stringResource(R.string.found_titles, searchResults.size),
+                        "Found ${searchResults.size} matching titles across your curated shelves and world library.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                SectionDivider(title = stringResource(R.string.on_your_shelf), count = "2 Items")
+                    SectionDivider(title = "On Your Shelf", count = "2 Items")
 
                     Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
                         searchResults.take(2).forEachIndexed { index, book ->
@@ -115,7 +113,7 @@ fun SearchResultsScreen(
 
                     Spacer(modifier = Modifier.height(64.dp))
 
-                    SectionDivider(title = stringResource(R.string.world_library), count = stringResource(R.string.global_collection))
+                    SectionDivider(title = "World Library", count = "Global Collection")
 
                     val remainingBooks = searchResults.drop(2)
                     val chunked = remainingBooks.chunked(2)
@@ -235,7 +233,7 @@ fun ShelfBookCard(book: BookItem, onClick: () -> Unit, modifier: Modifier = Modi
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
                 Text(
-                    stringResource(R.string.progress_status, "65%"),
+                    "65% PROGRESS",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),
@@ -305,7 +303,7 @@ fun FeaturedChoice(book: BookItem) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.curators_choice),
+                    "CURATOR'S CHOICE",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -322,7 +320,7 @@ fun FeaturedChoice(book: BookItem) {
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = {}, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), shape = RoundedCornerShape(8.dp)) {
-                    Text(stringResource(R.string.reserve_title))
+                    Text("RESERVE TITLE")
                 }
             }
             Box(

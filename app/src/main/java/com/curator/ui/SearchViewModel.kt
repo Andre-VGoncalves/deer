@@ -1,7 +1,6 @@
 package com.curator.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.curator.data.BookItem
 import com.curator.data.BooksRepository
@@ -16,7 +15,7 @@ sealed class SearchUiState {
     data class Error(val message: String) : SearchUiState()
 }
 
-class SearchViewModel(private val repository: BooksRepository) : ViewModel() {
+class SearchViewModel(private val repository: BooksRepository = BooksRepository()) : ViewModel() {
     private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Loading)
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
@@ -29,16 +28,6 @@ class SearchViewModel(private val repository: BooksRepository) : ViewModel() {
             } catch (e: Exception) {
                 _uiState.value = SearchUiState.Error(e.message ?: "Unknown Error")
             }
-        }
-    }
-
-    class Factory(private val repository: BooksRepository) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(SearchViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return SearchViewModel(repository) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

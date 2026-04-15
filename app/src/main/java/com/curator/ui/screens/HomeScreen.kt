@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -28,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.curator.R
 import com.curator.data.Book
 import com.curator.ui.components.CuratorBottomNavBar
 import com.curator.ui.components.CuratorTopAppBar
@@ -72,7 +70,7 @@ fun HomeScreen(
             // Hero Header
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    text = stringResource(R.string.good_evening),
+                    text = "GOOD EVENING, READER",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 2.sp
@@ -80,9 +78,9 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = buildAnnotatedString {
-                        append(stringResource(R.string.your_library_is))
+                        append("Your library is ")
                         withStyle(style = SpanStyle(fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.primary)) {
-                            append(stringResource(R.string.waiting))
+                            append("waiting")
                         }
                         append(".")
                     },
@@ -92,7 +90,7 @@ fun HomeScreen(
             }
 
             // Currently Reading
-            SectionHeader(title = stringResource(R.string.currently_reading))
+            SectionHeader(title = "Leituras em andamento")
 
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 24.dp),
@@ -105,13 +103,13 @@ fun HomeScreen(
             }
 
             // Curated for You (Bento)
-            SectionHeader(title = stringResource(R.string.curated_for_you))
+            SectionHeader(title = "Curated for You")
             BentoSection()
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Recent Activity
-            SectionHeader(title = stringResource(R.string.recent_activity))
+            SectionHeader(title = "Recent Activity")
             RecentActivityList()
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -130,7 +128,7 @@ fun SectionHeader(title: String) {
     ) {
         Text(text = title, style = MaterialTheme.typography.headlineSmall)
         Text(
-            text = stringResource(R.string.view_all),
+            text = "VIEW ALL",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
@@ -200,7 +198,7 @@ fun BentoSection() {
             Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text(
-                        stringResource(R.string.weekend_special),
+                        "WEEKEND SPECIAL",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         letterSpacing = 1.sp
@@ -216,7 +214,7 @@ fun BentoSection() {
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text(stringResource(R.string.start_reading), style = MaterialTheme.typography.labelSmall)
+                    Text("START READING", style = MaterialTheme.typography.labelSmall)
                 }
             }
             // Abstract background element
@@ -231,14 +229,14 @@ fun BentoSection() {
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             BentoSmallItem(
-                title = stringResource(R.string.new_arrivals),
+                title = "New Arrivals",
                 subtitle = "12 items",
                 icon = Icons.Default.AutoAwesome,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 modifier = Modifier.weight(1f)
             )
             BentoSmallItem(
-                title = stringResource(R.string.reading_lists),
+                title = "Reading Lists",
                 subtitle = "4 curated",
                 icon = Icons.Default.CollectionsBookmark,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
