@@ -33,6 +33,7 @@ val OnSurfaceVariant = Color(0xFF55433D)
 val Outline = Color(0xFF88726C)
 val OutlineVariant = Color(0xFFDBC1BA)
 
+val SurfaceContainerLowest = Color(0xFFFFFFFF)
 val SurfaceContainerLow = Color(0xFFF4F3F1)
 val SurfaceContainer = Color(0xFFEFEEEB)
 val SurfaceContainerHigh = Color(0xFFE9E8E5)
