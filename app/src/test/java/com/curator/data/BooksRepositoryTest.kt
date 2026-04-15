@@ -7,11 +7,11 @@ import org.junit.Test
 class BooksRepositoryTest {
 
     private val mockApiService = object : BooksApiService {
-        override suspend fun searchBooks(query: String): GoogleBooksResponse {
+        override suspend fun searchBooks(query: String, apiKey: String?): GoogleBooksResponse {
             return GoogleBooksResponse(items = emptyList())
         }
 
-        override suspend fun getBook(id: String): BookItem {
+        override suspend fun getBook(id: String, apiKey: String?): BookItem {
             return BookItem(id = id, volumeInfo = VolumeInfo("Test Title", null, null, null, null, null, null, null, null, null))
         }
     }

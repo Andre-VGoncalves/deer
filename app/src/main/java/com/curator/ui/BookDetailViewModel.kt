@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 sealed class BookDetailUiState {
     object Loading : BookDetailUiState()
@@ -26,6 +27,12 @@ class BookDetailViewModel(private val repository: BooksRepository) : ViewModel()
             try {
                 val book = repository.getBook(bookId)
                 _uiState.value = BookDetailUiState.Success(book)
+            } catch (e: HttpException) {
+                if (e.code() == 429) {
+                    _uiState.value = BookDetailUiState.Error("Rate limit exceeded (429). Please add a Google Books API key to strings.xml or try again later.")
+                } else {
+                    _uiState.value = BookDetailUiState.Error("Network error (${e.code()}): ${e.message()}")
+                }
             } catch (e: Exception) {
                 _uiState.value = BookDetailUiState.Error(e.message ?: "Unknown Error")
             }

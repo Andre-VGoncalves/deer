@@ -17,8 +17,8 @@ class BookDetailViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
 
     private val mockRepository = object : BooksRepository(object : com.curator.data.BooksApiService {
-        override suspend fun searchBooks(query: String) = throw Exception()
-        override suspend fun getBook(id: String) = BookItem(id, VolumeInfo("Title", null, null, null, null, null, null, null, null, null))
+        override suspend fun searchBooks(query: String, apiKey: String?) = throw Exception()
+        override suspend fun getBook(id: String, apiKey: String?) = BookItem(id, VolumeInfo("Title", null, null, null, null, null, null, null, null, null))
     }) {
         override suspend fun getBook(id: String) = BookItem(id, VolumeInfo("Title", null, null, null, null, null, null, null, null, null))
     }
@@ -45,5 +45,24 @@ class BookDetailViewModelTest {
         val state = viewModel.uiState.value
         assertTrue(state is BookDetailUiState.Success)
         assertEquals("123", (state as BookDetailUiState.Success).book.id)
+    }
+
+    @Test
+    fun `loadBook with error updates state to Error`() = runTest {
+        val errorRepo = object : BooksRepository(object : com.curator.data.BooksApiService {
+            override suspend fun searchBooks(query: String, apiKey: String?) = throw Exception()
+            override suspend fun getBook(id: String, apiKey: String?) = throw Exception("Detail Error")
+        }) {
+            override suspend fun getBook(id: String) = throw Exception("Detail Error")
+        }
+
+        val viewModel = BookDetailViewModel(errorRepo)
+        viewModel.loadBook("123")
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is BookDetailUiState.Error)
+        assertEquals("Detail Error", (state as BookDetailUiState.Error).message)
     }
 }

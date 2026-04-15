@@ -44,4 +44,6 @@
     <string name="reserve_title">RESERVE TITLE</string>
     <string name="view_details">VIEW DETAILS</string>
     <string name="progress_status">%1$s PROGRESS</string>
+    <!-- Add your Google Books API key here to avoid 429 errors -->
+    <string name="google_books_api_key"></string>
 </resources>

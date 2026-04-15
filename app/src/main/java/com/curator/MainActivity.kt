@@ -34,7 +34,8 @@ class MainActivity : ComponentActivity() {
         // Manual DI for simplicity in this project
         val retrofitProvider = RetrofitProvider()
         val apiService = retrofitProvider.provideBooksApi()
-        val repository = BooksRepository(apiService)
+        val apiKey = getString(R.string.google_books_api_key).ifBlank { null }
+        val repository = BooksRepository(apiService, apiKey)
 
         setContent {
             CuratorTheme {
