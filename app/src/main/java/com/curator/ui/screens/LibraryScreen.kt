@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -15,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.curator.data.Book
 import com.curator.ui.components.BookCard
@@ -25,7 +28,8 @@ import com.curator.ui.components.CuratorTopAppBar
 @Composable
 fun LibraryScreen(
     onBookClick: (Book) -> Unit,
-    onHomeClick: () -> Unit
+    onHomeClick: () -> Unit,
+    onSearch: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val categories = listOf("Reading", "Read", "Want to Read")
@@ -78,7 +82,16 @@ fun LibraryScreen(
                     disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                )
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (searchQuery.isNotBlank()) {
+                            onSearch(searchQuery)
+                        }
+                    }
+                ),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(32.dp))

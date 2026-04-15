@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.curator.ui.screens.BookDetailScreen
 import com.curator.ui.screens.HomeScreen
 import com.curator.ui.screens.LibraryScreen
+import com.curator.ui.screens.SearchResultsScreen
 import com.curator.ui.theme.CuratorTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,6 +43,7 @@ fun CuratorApp() {
         composable("home") {
             HomeScreen(
                 onBookClick = { book ->
+                    // For static books on home screen, we use their IDs
                     navController.navigate("bookDetail/${book.id}")
                 },
                 onLibraryClick = {
@@ -56,6 +58,22 @@ fun CuratorApp() {
                 },
                 onHomeClick = {
                     navController.navigate("home")
+                },
+                onSearch = { query ->
+                    navController.navigate("searchResults/$query")
+                }
+            )
+        }
+        composable(
+            route = "searchResults/{query}",
+            arguments = listOf(navArgument("query") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+            SearchResultsScreen(
+                query = query,
+                onBackClick = { navController.popBackStack() },
+                onBookClick = { bookItem ->
+                    navController.navigate("bookDetail/${bookItem.id}")
                 }
             )
         }
