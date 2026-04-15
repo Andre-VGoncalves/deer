@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.curator.ui.screens.BookDetailScreen
+import com.curator.ui.screens.HomeScreen
 import com.curator.ui.screens.LibraryScreen
 import com.curator.ui.theme.CuratorTheme
 
@@ -37,11 +38,24 @@ class MainActivity : ComponentActivity() {
 fun CuratorApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "library") {
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreen(
+                onBookClick = { book ->
+                    navController.navigate("bookDetail/${book.id}")
+                },
+                onLibraryClick = {
+                    navController.navigate("library")
+                }
+            )
+        }
         composable("library") {
             LibraryScreen(
                 onBookClick = { book ->
                     navController.navigate("bookDetail/${book.id}")
+                },
+                onHomeClick = {
+                    navController.navigate("home")
                 }
             )
         }

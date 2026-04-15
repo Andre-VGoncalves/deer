@@ -3,12 +3,8 @@ package com.curator.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,9 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.curator.data.Book
 import com.curator.ui.components.BookCard
 import com.curator.ui.components.CuratorBottomNavBar
@@ -30,7 +24,8 @@ import com.curator.ui.components.CuratorTopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
-    onBookClick: (Book) -> Unit
+    onBookClick: (Book) -> Unit,
+    onHomeClick: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val categories = listOf("Reading", "Read", "Want to Read")
@@ -55,7 +50,7 @@ fun LibraryScreen(
     Scaffold(
         topBar = { CuratorTopAppBar() },
         bottomBar = {
-            CuratorBottomNavBar(selectedItem = 1, onItemSelected = {})
+            CuratorBottomNavBar(selectedItem = 1, onItemSelected = { if (it == 0) onHomeClick() })
         }
     ) { padding ->
         Column(
@@ -130,8 +125,7 @@ fun LibraryScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Editorial Grid (Simplified for demo as LazyVerticalGrid doesn't work well inside verticalScroll)
-            // We use standard Row/Column for small number of items in a scrollable view
+            // Editorial Grid
             val chunkedBooks = books.chunked(2)
             chunkedBooks.forEach { rowBooks ->
                 Row(
