@@ -32,19 +32,23 @@ fun BookDetailScreen(
 ) {
     var book by remember { mutableStateOf<BookItem?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            scope.launch {
-                try {
-                    val response = RetrofitClient.booksApi.searchBooks("id:$bookId")
-                    book = response.items?.firstOrNull()
-                } catch (e: Exception) {
-                } finally {
-                    isLoading = false
-                }
+            try {
+                isLoading = true
+                errorMessage = null
+                val fetchedBook = RetrofitClient.booksApi.getBook(bookId)
+                book = fetchedBook
+            } catch (e: Exception) {
+                errorMessage = "Failed to load book: ${e.message}"
+            } finally {
+                isLoading = false
             }
+        } else {
+            isLoading = false
+            errorMessage = "Invalid Book ID"
         }
     }
 
@@ -79,6 +83,10 @@ fun BookDetailScreen(
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
+            }
+        } else if (errorMessage != null) {
+            Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
             }
         } else if (book == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

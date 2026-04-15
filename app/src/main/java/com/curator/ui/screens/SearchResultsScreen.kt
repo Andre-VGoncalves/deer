@@ -37,18 +37,16 @@ fun SearchResultsScreen(
 ) {
     var searchResults by remember { mutableStateOf<List<BookItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(query) {
-        scope.launch {
-            try {
-                val response = RetrofitClient.booksApi.searchBooks(query)
-                searchResults = response.items ?: emptyList()
-            } catch (e: Exception) {
-                // Handle error
-            } finally {
-                isLoading = false
-            }
+        try {
+            isLoading = true
+            val response = RetrofitClient.booksApi.searchBooks(query)
+            searchResults = response.items ?: emptyList()
+        } catch (e: Exception) {
+            // Handle error
+        } finally {
+            isLoading = false
         }
     }
 

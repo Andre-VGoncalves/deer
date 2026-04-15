@@ -31,6 +31,13 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = OnSurfaceVariant,
     outline = Outline,
     outlineVariant = OutlineVariant,
+    surfaceContainerLowest = SurfaceContainerLowest,
+    surfaceContainerLow = SurfaceContainerLow,
+    surfaceContainer = SurfaceContainer,
+    surfaceContainerHigh = SurfaceContainerHigh,
+    surfaceContainerHighest = SurfaceContainerHighest,
+    surfaceBright = SurfaceBright,
+    surfaceDim = SurfaceDim
 )
 
 @Composable
@@ -38,7 +45,6 @@ fun CuratorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    // For now, we only implement light theme as per HTML
     val colorScheme = LightColorScheme
 
     MaterialTheme(

@@ -2,6 +2,7 @@ package com.curator
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import android.net.Uri
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -60,7 +61,8 @@ fun CuratorApp() {
                     navController.navigate("home")
                 },
                 onSearch = { query ->
-                    navController.navigate("searchResults/$query")
+                    val encodedQuery = Uri.encode(query)
+                    navController.navigate("searchResults/$encodedQuery")
                 }
             )
         }
